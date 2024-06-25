@@ -312,7 +312,7 @@ $outputfile = "./Report-$($homeTenant.DisplayName)-$((get-date).ToString('yyyy-M
 
 @"
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
     <head>
         <title>$($homeTenant.DisplayName) $((get-date).ToString('yyyy-MM-dd-HH-mm-ss'))</title>
         <meta charset="UTF-8" />        
@@ -412,6 +412,6 @@ if($appsWithUnsafeDelegatedPriv) {
         "</ul> "| Out-File $outputfile -Append
     }
 }
-"</body></html>" | Out-File $outputfile
+"</body></html>" | Out-File $outputfile -Append
 
 Write-Host "Report generated and saved to $outputfile"
