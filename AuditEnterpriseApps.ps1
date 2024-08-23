@@ -15,7 +15,10 @@
 .EXAMPLE
   Just run the script
 #>
-#Requires -modules Microsoft.Graph
+#@Requires -modules Microsoft.Graph
+
+# TODO: Zaradit i ostatni permissions z https://github.com/emiliensocchi/azure-tiering/tree/main/Microsoft%20Graph%20application%20permissions
+# TODO: Sing-in logs vycitani zkusit skrze -parallel pro zrychleni
 
 ####################
 # Connection
@@ -88,7 +91,7 @@ function Render-AppHeader ($app) {
     $output += "<li>Enabled: $($app.App.AccountEnabled)</li>"
     $output += "<li>Service principal type: $($app.App.ServicePrincipalType)</li>"
     if($null -eq $app.AppSignIn) {
-        $output += "<li>Sig-in logs not fetched</li>"
+        $output += "<li>Sign-in logs not fetched</li>"
     } 
     else {
         $output += "<li>Last interactive sign-in: $($app.AppSignIn.Interactive)</li>"
@@ -153,20 +156,26 @@ function Render-Owner ($owners, $type) {
 }
 
 function Resolve-SigninLogs ($apps) {
-    $i = 0
-    foreach($app in $apps) {
-        $i++
-        $progressPercent = [Math]::Round($i / $apps.count * 100)
-        Write-Progress -Activity "Fetching signing logs" -Status "$progressPercent%" -PercentComplete $progressPercent
-    
-        try {
-            $logs = Get-SigninLogs $app.App
-            #Write-Host $app.App.Id
-            #Write-Host $logs
-            $app.AppSignIn = $logs
+    $appsCount = $apps.count
+    $step = 5
+    for ($i = 0; $i -lt $appsCount; $i=$i+$step) {
+        Write-Progress -Activity "Fetching signing logs" -Status "$i out of $appsCount completed" -PercentComplete (($i / $appsCount) * 100)
+        $apps[$i..($i+$step)] | Foreach-Object -ThrottleLimit 5 -Parallel {
+            try {
+                $interactiveLog = (Get-MgBetaAuditLogSignIn -Filter "(signInEventTypes/any(t: t eq 'interactiveUser')) and AppId eq '$($_.App.AppId)'" -Top 1).CreatedDateTime
+                $nonInteractiveLog = (Get-MgBetaAuditLogSignIn -Filter "(signInEventTypes/any(t: t eq 'nonInteractiveUser')) and AppId eq '$($_.App.AppId)'" -Top 1).CreatedDateTime
+                $servicePrincipalLog = (Get-MgBetaAuditLogSignIn -Filter "(signInEventTypes/any(t: t eq 'servicePrincipal')) and AppId eq '$($_.App.AppId)'" -Top 1).CreatedDateTime
+                $logs += [PSCustomObject]@{
+                    Interactive = $interactiveLog
+                    NonInteractive = $nonInteractiveLog
+                    ServicePrincipal = $servicePrincipalLog
+                }                
+                $_.AppSignIn = $logs
+            }
+            catch {}
         }
-        catch {}
-    }    
+    }
+    Write-Progress -Activity "Fetching signing logs" -Completed
 }
 
 # Just a help function to receive reg owner as native Entra ID object
@@ -385,7 +394,7 @@ if($appsWithUnsafeDelegatedPriv) {
         Render-Owner $app.AppRegistrationOwner "Application owners:"  | Out-File $outputfile -Append
 
         $delegatedPermissions = $app.AppDelegatedPriv
-        "Delegated permissions:"  | Out-File $outputfile -Append
+        "<h4 class='permissions'>Delegated permissions</h4>"  | Out-File $outputfile -Append
         "<ul>" | Out-File $outputfile -Append
         foreach ($perm in $delegatedPermissions) {
             $resource = $allApps | Where-Object {$_.id -eq $perm.ResourceId}
