@@ -38,6 +38,7 @@ Following application permissions can lead to full tenant compromise.
 * **UserAuthenticationMethod.ReadWrite.All** - Allows application to add TAP (temporary access password), e-mail or phone (for SMS and mail MFA) for any user.
 * **Policy.ReadWrite.PermissionGrant** – Allows the app to manage policies related to consent and permission grants for applications. So the application can allow any user to consent any permission back to this (or any other application) including RoleManagement.ReadWrite.Directory and lead to full tenant compromise. PoC: [Manipulating roles and permissions in Microsoft 365 environment via MS Graph](https://www.tenchisecurity.com/manipulating-roles-and-permissions-in-microsoft-365-environment-via-ms-graph/)
 * (disputed) **Directory.ReadWrite.All** - Microsoft says "[Directory.ReadWrite.All grants access that is broadly equivalent to a global tenant admin.](https://learn.microsoft.com/en-us/graph/permissions-reference#directoryreadwriteall)". However Andy Robbins has disputed it's sensitivity "[Directory.ReadWrite.All Is Not As Powerful As You Might Think](https://posts.specterops.io/passwordless-persistence-and-privilege-escalation-in-azure-98a01310be3f)". So it is unsure if this privilege can lead to full tenant compromise. The same permission exists in Azure Graph - maybe it was sensitive there and Microsoft just copied the text about sensitivity.
+* Other permissions: see following project [Azure administrative tiering](https://github.com/emiliensocchi/azure-tiering)
 
 ## Dangerous delegated permissions
 
