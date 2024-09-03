@@ -15,16 +15,13 @@
 .EXAMPLE
   Just run the script
 #>
-#@Requires -modules Microsoft.Graph
-
-# TODO: Zaradit i ostatni permissions z https://github.com/emiliensocchi/azure-tiering/tree/main/Microsoft%20Graph%20application%20permissions
-# TODO: Sing-in logs vycitani zkusit skrze -parallel pro zrychleni
+#Requires -modules Microsoft.Graph
 
 ####################
 # Connection
 ####################
 # Login to MS Graph
-Connect-MgGraph -Scopes Directory.Read.All, CrossTenantInformation.ReadBasic.All
+Connect-MgGraph -Scopes Directory.Read.All, CrossTenantInformation.ReadBasic.All -NoWelcome
 
 ####################
 # Definitions
@@ -35,17 +32,27 @@ $fetchSignInLogs = $true
 
 ######
 $dangerousScopes = @(
+    'AdministrativeUnit.ReadWrite.All'
     'Application.ReadWrite.All', 
     'AppRoleAssignment.ReadWrite.All',
+    'DelegatedAdminRelationship.ReadWrite.All',
     'Domain.ReadWrite.All',
     'Directory.AccessAsUser.All',
+    'EntitlementManagement.ReadWrite.All',
     'Exchange.Manage', 
     'Exchange.ManageAsApp',
     'Organization.ReadWrite.All',
     'Policy.ReadWrite.Authorization',
+    'Policy.ReadWrite.PermissionGrant',
+    'PrivilegedAccess.ReadWrite.AzureAD',
+    'PrivilegedAccess.ReadWrite.AzureADGroup',
+    'PrivilegedAccess.ReadWrite.AzureResources',
+    'PrivilegedAssignmentSchedule.ReadWrite.AzureADGroup',
     'RoleAssignmentSchedule.ReadWrite.Directory',
     'RoleEligibilitySchedule.ReadWrite.Directory',
     'RoleManagement.ReadWrite.Directory',
+    'RoleManagementPolicy.ReadWrite.AzureADGroup',
+    'RoleManagementPolicy.ReadWrite.Directory'
     'UserAuthenticationMethod.ReadWrite.All',
     'user_impersonation')
 $safeDelegatedScopes = @('User.Read', 'Contacts.Read', 'openid', 'profile', 'email', 'People.Read', 'offline_access', 'Calendars.Read')
