@@ -40,7 +40,7 @@ $dangerousScopes = @(
     'Directory.AccessAsUser.All',
     'EntitlementManagement.ReadWrite.All',
     'Exchange.Manage', 
-    'Exchange.ManageAsApp',
+    'full_access_as_app',
     'Organization.ReadWrite.All',
     'Policy.ReadWrite.Authorization',
     'Policy.ReadWrite.PermissionGrant',
